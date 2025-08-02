@@ -3,3 +3,5 @@ token.json
 credentials.json
 agent/
 __pycache__/
+token.b64
+credentials.b64

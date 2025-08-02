@@ -52,13 +52,18 @@ def main():
         results = (
             gmail_service.users()
             .messages()
-            .list(userId="me", q="from:classroom.google.com subject:assignment", maxResults=5)
+            .list(userId="me", q="is:unread from:classroom.google.com subject:assignment", maxResults=5)
             .execute()
         )
         messages = results.get("messages", [])
 
         if not messages:
             print("No new unread emails found.")
+            sendNotification(
+                topic,
+                "No New Assignments",
+                "There are no new as of yesterday. Please check your Google Classroom for updates."
+            )
             return
 
         print("Found new emails:\n")
