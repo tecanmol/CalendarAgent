@@ -7,11 +7,15 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from analyze_email import analyze
 from addTocalendar import create_calendar_event
+from notify import sendNotification
+import time
 
 # Define the permissions your script needs.
 # If you change these, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly",
           "https://www.googleapis.com/auth/calendar"]
+
+topic = "cal-ai-agent-alerts-u4xqz"
 
 def main():
     """
@@ -48,7 +52,7 @@ def main():
         results = (
             gmail_service.users()
             .messages()
-            .list(userId="me", q="is:unread from:classroom.google.com subject:assignment", maxResults=5)
+            .list(userId="me", q="from:classroom.google.com subject:assignment", maxResults=10)
             .execute()
         )
         messages = results.get("messages", [])
@@ -94,6 +98,12 @@ def main():
                 details = analyze(subject, decoded_body)
                 if details and details.get("due_date"):
                     create_calendar_event(calendar_service, details)
+                    sendNotification(
+                        topic,
+                        details.get("title", "New Assignment"),
+                        details.get("message", "You have a new assignment.")
+                    )
+                    time.sleep(1) # To avoid hitting API rate limits
                 # Print a snippet of the body to keep the output clean
                 snippet = (decoded_body[:250] + '...') if len(decoded_body) > 250 else decoded_body
             else:

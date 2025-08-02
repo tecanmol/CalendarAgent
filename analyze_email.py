@@ -21,6 +21,7 @@ def analyze(subject ,email_content):
     1.  'title': A concise title for the assignment.
     2.  'due_date': The due date in strict YYYY-MM-DD format.
     3.  'description': A brief description of the assignment, suitable for a calendar event.
+    4:   'message': a short message to be sent as a notification.
 
     If any information is missing, use a null value for that key. If no assignment is found at all, return a JSON object with null values for all keys.
 
