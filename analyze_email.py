@@ -12,7 +12,7 @@ genai.configure(api_key=api_key)
 
 def analyze(subject ,email_content):
     current_date_str = datetime.now().strftime("%Y-%m-%d")
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
     prompt = f"""
     You are a highly intelligent data extraction agent. Your task is to analyze the following email and extract assignment details.
     The current date is {current_date_str}.

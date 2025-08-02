@@ -52,7 +52,7 @@ def main():
         results = (
             gmail_service.users()
             .messages()
-            .list(userId="me", q="from:classroom.google.com subject:assignment", maxResults=10)
+            .list(userId="me", q="from:classroom.google.com subject:assignment", maxResults=5)
             .execute()
         )
         messages = results.get("messages", [])
