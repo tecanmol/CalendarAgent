@@ -18,10 +18,6 @@ SCOPES = ["https://www.googleapis.com/auth/gmail.readonly",
 topic = "cal-ai-agent-alerts-u4xqz"
 
 def main():
-    """
-    Connects to the Gmail API, fetches the 5 most recent unread emails,
-    and prints their subject and body.
-    """
     creds = None
     # The file token.json stores the user's access and refresh tokens.
     # It's created automatically when the authorization flow completes for the first time.
