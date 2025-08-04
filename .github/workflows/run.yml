@@ -2,7 +2,7 @@ name: Calendar Agent
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # runs every 5 minutes (UTC)
+    - cron: "30 2 * * *"  # runs every dat at 8am (IST)
   workflow_dispatch:
 
 jobs:
