@@ -12,7 +12,7 @@ import time
 
 # Define the permissions your script needs.
 # If you change these, delete the file token.json.
-SCOPES = ["https://www.googleapis.com/auth/gmail.readonly",
+SCOPES = ["https://www.googleapis.com/auth/gmail.modify",
           "https://www.googleapis.com/auth/calendar"]
 
 topic = "cal-ai-agent-alerts-u4xqz"
@@ -48,7 +48,7 @@ def main():
         results = (
             gmail_service.users()
             .messages()
-            .list(userId="me", q="is:unread from:classroom.google.com subject:assignment", maxResults=5)
+            .list(userId="me", q="is:unread from:classroom.google.com", maxResults=5)
             .execute()
         )
         messages = results.get("messages", [])
@@ -58,7 +58,7 @@ def main():
             sendNotification(
                 topic,
                 "No New Assignments",
-                "There are no new as of yesterday. Please check your Google Classroom for updates."
+                "There are no new assignments as of yesterday. Please check your Google Classroom for updates."
             )
             return
 
@@ -97,6 +97,10 @@ def main():
             if body_data:
                 decoded_body = base64.urlsafe_b64decode(body_data).decode("utf-8")
                 details = analyze(subject, decoded_body)
+                if not details.get("is_assignment"):
+                    # If not an assignment, skip further processing
+                    print(f"Skipping email: {subject} - Not a new assignment.")
+                    continue
                 if details and details.get("due_date"):
                     create_calendar_event(calendar_service, details)
                     sendNotification(
@@ -104,17 +108,18 @@ def main():
                         details.get("title", "New Assignment"),
                         details.get("message", "You have a new assignment.")
                     )
-                    time.sleep(1) # To avoid hitting API rate limits
-                # Print a snippet of the body to keep the output clean
-                snippet = (decoded_body[:250] + '...') if len(decoded_body) > 250 else decoded_body
+
+                print(f"-> Marking email '{subject}' as read.\n")
+                gmail_service.users().messages().modify(
+                    userId='me',
+                    id=message['id'],
+                    body={'removeLabelIds': ['UNREAD']}
+                ).execute()
+
+                time.sleep(2) # To avoid hitting API rate limits
+                
             else:
-                snippet = "No text content found."
-
-
-            # print(f"--- Subject: {subject} ---")
-            # print(snippet)
-            # print("-" * (len(subject) + 20) + "\n")
-
+                print(f"Skipping email: {subject} - No body content found.")
 
     except HttpError as error:
         print(f"An error occurred: {error}")

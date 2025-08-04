@@ -14,28 +14,46 @@ def analyze(subject ,email_content):
     current_date_str = datetime.now().strftime("%Y-%m-%d")
     model = genai.GenerativeModel('gemini-2.5-flash')
     prompt = f"""
-    You are a highly intelligent data extraction agent. Your task is to analyze the following email and extract assignment details.
-    The current date is {current_date_str}.
+     You are an intelligent data extraction agent specializing in parsing communications from Google Classroom.
 
-    Please extract the following information:
-    1.  'title': A concise title for the assignment.
-    2.  'due_date': The due date in strict YYYY-MM-DD format.
-    3.  'description': A brief description of the assignment, suitable for a calendar event.
-    4:   'message': a short message to be sent as a notification.
+    ## CONTEXT
+    - The current date is {current_date_str}. The user's timezone is Asia/Kolkata.
+    - The email is from Google Classroom. It could be a new assignment, an announcement, a comment, or a grade notification. Your first job is to figure out which it is.
 
-    If any information is missing, use a null value for that key. If no assignment is found at all, return a JSON object with null values for all keys.
+    ## PRIMARY TASK
+    First, determine if the email describes a **new task, quiz, or material submission that requires action**. Do not treat comments on old posts, grade updates, or general announcements as new assignments.
+    and if a task, submission, assignments, or quizzes does not have a due date, add a due day of 6 days from the current date.
 
-    Respond ONLY with a valid JSON object. Do not include any other text or explanations.
+    ## OUTPUT SCHEMA
+    Based on your analysis, respond ONLY with a single, valid JSON object. The JSON must have the following keys:
+    {{
+      "is_assignment": boolean,
+      "title": "string or null",
+      "due_date": "string in YYYY-MM-DD format or null",
+      "description": "string or null",
+      "message": "string or null"
+    }}
 
-    Here is the email content:
+    ## FIELD INSTRUCTIONS
+    - **is_assignment**: Set to `true` ONLY if the email describes a new task to be completed. Otherwise, set to `false`.
+    - **title**: If `is_assignment` is true, extract the assignment's official title.
+    - **due_date**: If a due date is present, extract it in strict YYYY-MM-DD format. If no due date is mentioned, use `null`.
+    - **description**: A brief summary of the assignment's instructions, suitable for a calendar event description.
+    - **message**: If `is_assignment` is true, create a very short (1-5 word) summary for a push notification, like "New AI Assignment".
+
+    ## FINAL RULES
+    - If `is_assignment` is `false`, all other keys in the JSON object must be `null`.
+    - Analyze the entire email context (subject and body) carefully before making a decision.
+
+    ## EMAIL FOR ANALYSIS
     ---
     Subject: {subject}
     Body: {email_content}
     ---
     """
-    
+
     response = model.generate_content(prompt)
-    # print(response.text)
+    print(response.text)
     try:
         # Clean up the response to ensure it's valid JSON
         cleaned_response = response.text.strip().replace("```json", "").replace("```", "")
