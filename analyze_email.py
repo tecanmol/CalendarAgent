@@ -53,7 +53,7 @@ def analyze(subject ,email_content):
     """
 
     response = model.generate_content(prompt)
-    print(response.text)
+    # print(response.text)
     try:
         # Clean up the response to ensure it's valid JSON
         cleaned_response = response.text.strip().replace("```json", "").replace("```", "")
